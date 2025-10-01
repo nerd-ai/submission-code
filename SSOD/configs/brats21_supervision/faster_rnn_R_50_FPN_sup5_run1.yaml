@@ -1,0 +1,37 @@
+_BASE_: "../Base-RCNN-FPN.yaml"
+MODEL:
+  META_ARCHITECTURE: "TwoStagePseudoLabGeneralizedRCNN"
+  WEIGHTS: "/path/to/weights/R-50.pkl"
+  MASK_ON: False
+  RESNETS:
+    DEPTH: 50
+  PROPOSAL_GENERATOR:
+    NAME: "PseudoLabRPN"
+  RPN:
+    POSITIVE_FRACTION: 0.25
+    LOSS: "CrossEntropy"
+  ROI_HEADS:
+    NAME: "StandardROIHeadsPseudoLab"
+    LOSS: "FocalLoss"
+    NUM_CLASSES: 1
+SOLVER:
+  CHECKPOINT_PERIOD: 500       # 每200次迭代保存一次检查点
+  LR_SCHEDULER_NAME: "WarmupMultiStepLR"
+  STEPS: (7500, 9000)
+  MAX_ITER: 10000
+  IMG_PER_BATCH_LABEL: 32
+  IMG_PER_BATCH_UNLABEL: 32
+  BASE_LR: 0.004
+DATASETS:
+  CROSS_DATASET: False
+  TRAIN: ("brats21_cut_train",)
+  TEST: ("brats21_cut_val",)
+SEMISUPNET:
+  Trainer: "ubteacher"
+  BBOX_THRESHOLD: 0.7
+  TEACHER_UPDATE_ITER: 1
+  BURN_UP_STEP: 800
+  EMA_KEEP_RATE: 0.9996
+  UNSUP_LOSS_WEIGHT: 1.5
+TEST:
+  EVAL_PERIOD: 150
